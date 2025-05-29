@@ -1,97 +1,43 @@
-# MidiMessageHandler
+# ArtnetSenderExample
 
-A Java class for handling MIDI input in Processing with `themidibus` library
-
-## Overview
-
-The `MidiMessageHandler` class provides a thread-safe way to manage incoming MIDI messages. It uses a bounded queue to store incoming messages from `themidibus` when set as the parent of the `MidiBus` object. This design allows for asynchronous processing of MIDI events, preventing blocking of the main application thread.
+This Processing sketch demonstrates how to send Art-Net DMX data from Processing to control lighting fixtures or other Art-Net compatible devices. It uses the [bildspur/ArtNet library](https://github.com/bildspur/artnet) to handle Art-Net communication over UDP.
 
 ## Features
 
-*   **Thread-safe message queue:** Uses `LinkedBlockingQueue` for concurrent access.
-*   **Bounded queue:** Prevents excessive memory usage by limiting the number of stored messages.
-*   **Callback methods:**  `noteOn()`, `noteOff()`, and `controllerChange()` methods to handle specific MIDI message types from `themidibus`
-*   **Clear message queue functionality:** Provides `clearMessages()` to empty the message queue.
-*   **Getter and Setter for Max Queue Size:** Allows dynamic adjustment of the queue's capacity.
-*   **Error Handling:** Discards messages and prints a warning to `System.err` if the queue is full.
+- Sends Art-Net packets over UDP to a specified IP address
+- Supports multiple universes and up to 512 DMX channels per universe
+- Example shows how to generate color patterns and control brightness interactively
+- Threaded sending for smooth and reliable DMX output
+
+## Requirements
+
+- [Processing](https://processing.org/) (tested with version 4.x)
+- [bildspur/ArtNet library](https://github.com/bildspur/artnet) for Processing
+- Network access to your Art-Net device (e.g., LED controller, lighting console)
 
 ## Usage
 
-1.  **Include the classes:** Place `MidiMessage.java`, `MidiMessageType.java`, and `MidiMessageHandler.java` in your Processing sketch's `code` folder
+1. Install the bildspur/ArtNet library in Processing.
+2. Open `ArtnetSenderExample.pde` in Processing.
+3. Adjust the `remote` IP address to match your Art-Net device.
+4. Optionally, change the number of universes, LEDs, or colors as needed.
+5. Run the sketch. Move your mouse horizontally to change the brightness of the output.
 
-2.  **Create an instance:** Create an instance of `MidiMessageHandler` in your Processing sketch and use it as the parent for the `themidibus`
+## Example Code
 
-    ```java
+```java
+// Example usage in Processing
+ArtnetSender artnet = new ArtnetSender("192.168.0.100", 0);
+artnet.send(1, 255); // Send value 255 to channel 1
+```
 
-    MidiMessageHandler midiHandler;
-    MidiBus myBus; // The MidiBus
+The included sketch demonstrates sending color data to 8 universes, each with up to 75 RGB LEDs (225 channels per universe). The color and brightness are controlled interactively.
 
-    void setup() {
-        midiHandler = new MidiMessageHandler(100); // Create handler with a queue size of 100
-        myBus = news MidiBus(midiHandler, "IncomingDeviceName", "OutgoingDeviceName");
-    }
-    ```
+## Files
 
-5.  **Retrieve messages from the queue:** Use the `getAndRemoveFirstMessage()` method to process the queued messages.
+- `ArtnetSenderExample.pde` — Main Processing sketch
+- `ArtnetSenderThread.java` — Helper thread for continuous Art-Net sending
 
-    ```java
-    void draw() {
-        while (midiHandler.hasWaitingMessages()) {
-            MidiMessage message = midiHandler.getAndRemoveFirstMessage();
-            // Process the message
-            println(message);
+## License
 
-            // Check message type
-            if (message.getMessageType() == MidiMessageType.CONTROL_CHANGE)
-            {
-                println(message.getChannel() + " " + message.getControllerNumber() + " " + message.getControllerValue());
-            }
-            if (message.getMessageType() == MidiMessageType.NOTE_ON || message.getMessageType() == MidiMessageType.NOTE_OFF)
-            {
-                println(message.getChannel() + " " + message.getNote() + " " + message.getVelocity());
-            }
-        }
-    }
-    ```
-
-## Class Details
-
-### `MidiMessageHandler(int maxSize)`
-
-Constructor. Initializes the message queue with the specified maximum size.
-
-### `boolean hasWaitingMessages()`
-
-Returns `true` if there are messages waiting in the queue, `false` otherwise.
-
-### `void clearMessages()`
-
-Clears all messages from the queue.
-
-### `void noteOn(int channel, int pitch, int velocity)`
-
-Callback method for Note On MIDI messages. Creates a `MidiMessage` object and adds it to the queue.
-
-### `void noteOff(int channel, int pitch, int velocity)`
-
-Callback method for Note Off MIDI messages. Creates a `MidiMessage` object and adds it to the queue.
-
-### `void controllerChange(int channel, int number, int value)`
-
-Callback method for Controller Change MIDI messages. Creates a `MidiMessage` object and adds it to the queue.
-
-### `MidiMessage getAndRemoveFirstMessage()`
-
-Retrieves and removes the first message from the queue. Returns `null` if the queue is empty.
-
-### `int getMaxsize()`
-
-Returns the maximum size of the message queue.
-
-### `void setMaxSize(int maxSize)`
-
-Sets the maximum size of the message queue. This creates a new queue and copies the existing messages. Throws `IllegalArgumentException` if `maxSize` is not positive.
-
-## Dependencies
-*   Processing 4.* (could work on earlier versions, but haven't tested it)
-*   `themidibus` MIDI library for Processing
+This example is provided for educational purposes.
