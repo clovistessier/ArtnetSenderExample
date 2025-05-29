@@ -11,7 +11,7 @@ This Processing sketch demonstrates how to send Art-Net DMX data from Processing
 
 ## Requirements
 
-- [Processing](https://processing.org/) (tested with version 4.x)
+- [Processing](https://processing.org/) (tested with version 4.3.4)
 - [bildspur/ArtNet library](https://github.com/bildspur/artnet) for Processing
 - Network access to your Art-Net device (e.g., LED controller, lighting console)
 
@@ -26,9 +26,52 @@ This Processing sketch demonstrates how to send Art-Net DMX data from Processing
 ## Example Code
 
 ```java
-// Example usage in Processing
-ArtnetSender artnet = new ArtnetSender("192.168.0.100", 0);
-artnet.send(1, 255); // Send value 255 to channel 1
+// Example usage in Processing (from ArtnetSenderExample.pde)
+import ch.bildspur.artnet.*;
+
+ArtNetClient artnet = new ArtNetClient(null);
+artnet.start();
+
+String remote = "192.168.8.201";
+byte[][] artnetData = new byte[8][512];
+
+byte[][] sharedArtnetData = new byte[8][512];
+final Object artnetLock = new Object();
+
+// ...
+
+// Fill artnetData with your DMX values here
+void setup() {
+    // create artnet client without buffer (no receving needed)
+  artnet = new ArtNetClient(null);
+  artnet.start();
+  
+  // initialize the artnetData and sharedArtnetData arrays
+  synchronized(artnetLock) {
+    for (int i = 0; i < artnetData.length; i++) {
+      for (int j = 0; j < artnetData[i].length; j++) {
+        artnetData[i][j] = 0;
+        sharedArtnetData[i][j] = 0;
+      }
+    }
+  }
+
+  // start the ArtnetSenderThread to send data in the background
+  new ArtnetSenderThread(artnet, remote, sharedArtnetData, artnetLock).start();
+}
+
+void draw() {
+  // ...
+  // update the values in artnetData however you like
+  // ..
+
+  // Copy artnetData to sharedArtnetData safely
+  synchronized(artnetLock) {
+    for (int i = 0; i < artnetData.length; i++) {
+      System.arraycopy(artnetData[i], 0, sharedArtnetData[i], 0, artnetData[i].length);
+    }
+  }
+}
 ```
 
 The included sketch demonstrates sending color data to 8 universes, each with up to 75 RGB LEDs (225 channels per universe). The color and brightness are controlled interactively.

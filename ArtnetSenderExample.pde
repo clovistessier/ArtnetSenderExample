@@ -46,6 +46,7 @@ void setup() {
     }
   }
 
+  // start the ArtnetSenderThread to send data in the background
   new ArtnetSenderThread(artnet, remote, sharedArtnetData, artnetLock).start();
 }
 
