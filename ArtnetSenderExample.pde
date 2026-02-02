@@ -11,7 +11,7 @@ final int NUM_COLORS = 8;
 color[] colors = new color[NUM_COLORS];
 
 
-final int NUM_LEDS = 75;
+final int NUM_LEDS = 38;
 byte[][] artnetData = new byte[8][512];
 
 byte[][] sharedArtnetData = new byte[8][512];
@@ -52,7 +52,8 @@ void setup() {
 
 void draw() {
   // set the brightness based on mouseX position for this example
-  brightness = map(mouseX, 0, width, 0, 1.0);
+  // brightness = map(mouseX, 0, width, 0, 1.0);
+  brightness = 1.0;
 
   // fill artnet array  
   for (int i = 0; i < NUM_COLORS; i++) {
@@ -64,6 +65,7 @@ void draw() {
     // fill the dmxData array
     // in this example we fill each strip with a different color
     color c = colors[i];
+    // color c = color(255, 255, 255); // all strips white
     for (int j = 0; j < NUM_LEDS; j++) {
       artnetData[i][j*3 + 0] = (byte)(red(c)*brightness);
       artnetData[i][j*3 + 1] = (byte)(green(c)*brightness);
